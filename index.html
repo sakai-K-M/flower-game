@@ -140,7 +140,7 @@ const hide=id=>{const e=el(id);if(e)e.style.display='none';}
 
 let S={water:60,sun:60,love:60,growth:0,stage:0,gen:1,
   birdActive:false,birdX:0,birdY:50,birdVy:1,birdVx:-2,birdHp:10,
-  birdWarn:false,birdWarnTimer:0,birdEscTimer:0,bird2Step:0,bird2TapDelay:0,
+  birdWarn:false,birdWarnTimer:0,birdEscTimer:0,bird2Step:0,bird2TapDelay:0,bird2AutoTimer:0,
   typhoonActive:false,supported:false,typhoonTimer:0,typhoonDir:1,
   witherTimer:0,sleeping:false,sleepTimer:0,showSleep:false,sleepTimer2:0,
   showSeedWait:false,seedWaitTimer:0,showBloom:false,bloomTimer:0,
@@ -163,7 +163,7 @@ let leafInterval=null,leafEndTimeout=null;
 function startLeafGame(){
   if(S.mgActive)return;
   S.mgActive=true;S.mgType='sun';S.leafCleared=0;S.leafTotal=8;
-  el('mg-title').textContent='☀️ お日様が届かなくなっちゃう！';
+  el('mg-title').textContent='☀️ ひなたへ！';
   el('mg-inst').textContent='落ち葉をタップして払おう！';
   el('mg-speed-lbl').textContent='';
   el('mg-track').style.display='none';el('mg-tap-btn').style.display='none';
@@ -302,7 +302,7 @@ function maybeEvent(){
         S.birdX=cv.width+40;S.birdY=30+Math.random()*30;S.birdVx=-2;S.birdVy=(Math.random()-0.5)*2;
         show('ovBird1w');sm('なんか来る気がする…！タップして！');
       } else {
-        S.bird2Step=1;show('ovBird2a');sm('なんか来た…タップして！');
+        S.bird2Step=1;S.bird2AutoTimer=300;show('ovBird2a');sm('なんか来た…タップして！');
       }
     } else if(r<0.003){
       S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;
@@ -557,6 +557,8 @@ function drawBird(W,H){
 let frame=0;
 function tick(){
   frame++;S.frame=frame;S.dayTime=(S.dayTime+0.0004)%1;
+  if(S.bird2TapDelay>0)S.bird2TapDelay--;
+  if(S.bird2AutoTimer>0){S.bird2AutoTimer--;if(S.bird2AutoTimer===0&&S.bird2Step===1){S.bird2Step=2;S.bird2TapDelay=60;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');}}
   if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');S.birdActive=true;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
   if(S.birdActive){
     S.birdX+=S.birdVx;
@@ -638,7 +640,7 @@ function loadGame(){
     S.gen=data.gen||1;
     S.dayTime=data.dayTime||0;
     ui();
-    sm(S.gen+'代目のお花、ただいま！🌱');
+    sm(S.gen+'代目のお花、おかえり🌱');
   }catch(e){}
 }
 function startGame(){
