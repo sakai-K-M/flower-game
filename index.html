@@ -130,7 +130,7 @@ document.getElementById('titleScreen').addEventListener('click',()=>{
 
 const STAGES=['🌱 たね','🌿 め','🌷 つぼみ','🌸 まんかい','🍂 かれた','🌰 たねはっけん'];
 const MUSHROOM_LINE='きのこについてたあの子、元気かな';
-const MONOLOGUES=['酒のみてえな','お、花粉が人類に攻撃を仕掛けている','関西の人の「知らんけど」はもはや口癖なので深い意味はないな','「暗黙の了解だから！」って言った時点で暗黙じゃないよな','ふふふ～んふふふ～んへいへい！！（激しめの鼻歌）','また人間が走ってる。のんびりいこうね','地球から月の裏側が見えないのってなんかおもしろい','私はいつ生まれたのだっけ、、、？','二日酔いしんどい','桜の木で行われる定例会議の時期か、、、','きのこ協会に怒られた、、、','落し物がわかりやすい場所に置かれてるとやさしさ感じるよな','今日の空、火星みたい。懐かしい','お日様があたたかくて労働なんかしてられない。お昼寝やっ','最近春と秋が短いよね','葉っぱの形ってかわいいわ～','森が減っていく、、、'];
+const MONOLOGUES=['酒のみてえな','お、花粉が人類に攻撃を仕掛けている','関西の人の「知らんけど」はもはや口癖なので深い意味はないな','「暗黙の了解だから！」って言った時点で暗黙じゃないよな','ふふふ～んふふふ～んへいへい！！（激しめの鼻歌）','また人間が走ってる。のんびりいこうね','地球から月の裏側が見えないのってなんかおもしろい','私はいつ生まれたのだっけ、、、？','二日酔いしんどい','桜の木で行われる定例会議の時期か、、、','きのこ協会に怒られた、、、','落し物がわかりやすい場所に置かれてるとやさしさ感じるよね','今日の空、火星みたい。懐かしい','お日様があたたかくて労働意欲がわかない。お昼寝だっ','最近春と秋が短いよね','葉っぱの形ってかわいいわ～','森が減っていく、、、'];
 const SPEED_LABELS=['🐢 ゆっくり','🚶 ふつう','🏃 はやい！','⚡ むずかしい！'];
 
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),scene=document.getElementById('scene');
@@ -163,7 +163,7 @@ let leafInterval=null,leafEndTimeout=null;
 function startLeafGame(){
   if(S.mgActive)return;
   S.mgActive=true;S.mgType='sun';S.leafCleared=0;S.leafTotal=8;
-  el('mg-title').textContent='☀️ ひなたへ！';
+  el('mg-title').textContent='☀️ 落ち葉で日光がさえぎられてしまう！';
   el('mg-inst').textContent='落ち葉をタップして払おう！';
   el('mg-speed-lbl').textContent='';
   el('mg-track').style.display='none';el('mg-tap-btn').style.display='none';
@@ -500,7 +500,7 @@ function drawSkip(sx,base){
   if(S.skipTimer===0&&S.cutType===5){
     ctx.fillStyle='rgba(255,255,255,0.8)';ctx.font='14px sans-serif';
     ctx.fillText('ズコッ',sx-10,base-60);
-    sm('棒人間がスキップしてたらなぜかコケた😇');
+    sm('棒人間がスキップしてたらころんじゃった。何に躓いたんだ？');
   }
 }
 
@@ -551,7 +551,7 @@ function drawSurprise(sx,base){
     ctx.fillStyle='#FAC775';ctx.font='bold 18px sans-serif';
     ctx.fillText('!?',sx+10,base-65);
   }
-  const surpriseMsgs=['棒人間が突然何かに驚いた','何もないのに「うわっ」てなってた','棒人間がびびり倒してる'];
+  const surpriseMsgs=['棒人間が突然何かに驚いた','何もないのに「うわっ」てなってた','棒人間がびびり倒してる。モグラかな？'];
   if(S.surpriseTimer===79)sm(surpriseMsgs[Math.floor(Math.random()*surpriseMsgs.length)]);
   if(S.surpriseTimer>0)S.surpriseTimer--;
 }
@@ -676,7 +676,7 @@ function loadGame(){
     S.gen=data.gen||1;
     S.dayTime=data.dayTime||0;
     ui();
-    sm(S.gen+'代目のお花、おかえり🌱');
+    sm(S.gen+'代目のお花、ただいま🌱');
   }catch(e){}
 }
 function startGame(){
