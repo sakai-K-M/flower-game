@@ -596,7 +596,7 @@ function tick(){
   frame++;S.frame=frame;S.dayTime=(S.dayTime+0.0004)%1;
   if(S.bird2TapDelay>0)S.bird2TapDelay--;
   if(S.bird2AutoTimer>0&&S.bird2Step===1){S.bird2AutoTimer--;if(S.bird2AutoTimer===0){S.bird2Step=2;S.bird2TapDelay=80;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');}}
-  if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');hide('ovBird2a');hide('ovBird2b');S.bird2Step=0;S.bird2TapDelay=0;S.birdActive=true;S.birdHp=10;show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
+  if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');S.birdShowOwl=true;show('ovBird1a');sm('！！タップしてゲーム開始！');}}
   if(S.birdActive){
     S.birdX+=S.birdVx;
     S.birdY+=S.birdVy;
@@ -676,7 +676,7 @@ function loadGame(){
     S.gen=data.gen||1;
     S.dayTime=data.dayTime||0;
     ui();
-    sm(S.gen+'代目のお花、ただいま🌱');
+    sm(S.gen+'代目のお花、おかえり🌱');
   }catch(e){}
 }
 function startGame(){
