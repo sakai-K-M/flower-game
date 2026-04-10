@@ -140,7 +140,7 @@ const hide=id=>{const e=el(id);if(e)e.style.display='none';}
 
 let S={water:60,sun:60,love:60,growth:0,stage:0,gen:1,
   birdActive:false,birdX:0,birdY:50,birdVy:1,birdVx:-2,birdHp:10,
-  birdWarn:false,birdWarnTimer:0,birdEscTimer:0,bird2Step:0,bird2TapDelay:0,bird2AutoTimer:0,
+  birdWarn:false,birdWarnTimer:0,birdEscTimer:0,birdShowOwl:false,bird2Step:0,bird2TapDelay:0,bird2AutoTimer:0,
   typhoonActive:false,supported:false,typhoonTimer:0,typhoonDir:1,
   witherTimer:0,sleeping:false,sleepTimer:0,showSleep:false,sleepTimer2:0,
   showSeedWait:false,seedWaitTimer:0,showBloom:false,bloomTimer:0,
@@ -271,7 +271,7 @@ function applyResult(type,result){
 }
 
 function doAct(t){
-  if(S.birdActive||S.birdWarn||S.bird2Step>0){sm('まず鳥をなんとかして！');return;}
+  if(S.birdActive||S.birdWarn||S.birdShowOwl||S.bird2Step>0){sm('まず鳥をなんとかして！');return;}
   if(S.typhoonActive){sm('台風中！スワイプで支えて！');return;}
   if(S.stage>=4){sm('今は種を見つけるのを待って…');return;}
   if(S.mgActive)return;
@@ -294,7 +294,7 @@ function newGen(){S.gen++;S.water=60;S.sun=60;S.love=60;S.growth=0;S.stage=0;S.w
 
 function maybeEvent(){
   // 鳥・台風イベント（独立判定）
-  if(!S.birdActive&&!S.birdWarn&&S.bird2Step===0&&!S.typhoonActive&&S.stage>=1&&S.stage<4&&!S.mgActive&&!S.showMushroom){
+  if(!S.birdActive&&!S.birdWarn&&!S.birdShowOwl&&S.bird2Step===0&&!S.typhoonActive&&S.stage>=1&&S.stage<4&&!S.mgActive&&!S.showMushroom){
     const r=Math.random();
     if(r<0.0018){
       if(Math.random()<0.5){
@@ -332,13 +332,23 @@ scene.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-S.swi
 function handleTap(cx,cy){
   if(S.mgActive)return;
 
-  // 鳥パターン1・警告タップ→ゲーム開始
+  // 鳥パターン1・警告タップ→フクロウ表示
   if(S.birdWarn){
     S.birdWarn=false;S.birdWarnTimer=0;
-    ['ovBird1w','ovBird2a','ovBird2b'].forEach(hide);
+    hide('ovBird1w');
+    S.birdShowOwl=true;
+    show('ovBird1a');
+    sm('！！タップしてゲーム開始！');return;
+  }
+
+  // フクロウ画像タップ→ゲーム開始
+  if(S.birdShowOwl){
+    S.birdShowOwl=false;
+    hide('ovBird1a');
+    ['ovBird2a','ovBird2b'].forEach(hide);
     S.bird2Step=0;S.bird2TapDelay=0;S.bird2AutoTimer=0;
     S.birdActive=true;S.birdHp=10;S.birdEscTimer=0;
-    show('ovBird1a');show('evBird');show('hpw');
+    show('evBird');show('hpw');
     el('hpf').style.width='100%';el('birdLeft').textContent='10';
     sm('🐦 鳥を直接タップして追い払え！');return;
   }
@@ -354,7 +364,7 @@ function handleTap(cx,cy){
       el('birdLeft').textContent=S.birdHp;
       if(S.birdHp<=0){
         S.birdActive=false;S.birdEscTimer=0;
-        ['ovBird1a','evBird','hpw'].forEach(hide);
+        ['evBird','hpw'].forEach(id=>hide(id));
         S.love=Math.min(100,S.love+18);ui();
         sm('棒人間が鳥を追い払った！お花は無事！');
       } else sm('もう'+S.birdHp+'回当てて！');
@@ -586,7 +596,7 @@ function tick(){
   frame++;S.frame=frame;S.dayTime=(S.dayTime+0.0004)%1;
   if(S.bird2TapDelay>0)S.bird2TapDelay--;
   if(S.bird2AutoTimer>0&&S.bird2Step===1){S.bird2AutoTimer--;if(S.bird2AutoTimer===0){S.bird2Step=2;S.bird2TapDelay=80;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');}}
-  if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');hide('ovBird2a');hide('ovBird2b');S.bird2Step=0;S.bird2TapDelay=0;S.birdActive=true;S.birdHp=10;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
+  if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');hide('ovBird2a');hide('ovBird2b');S.bird2Step=0;S.bird2TapDelay=0;S.birdActive=true;S.birdHp=10;show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
   if(S.birdActive){
     S.birdX+=S.birdVx;
     S.birdY+=S.birdVy;
@@ -599,7 +609,7 @@ function tick(){
     // 制限時間（600フレーム＝約10秒）で逃げる
     S.birdEscTimer=(S.birdEscTimer||0)+1;
     if(S.birdEscTimer>600){
-      S.birdActive=false;S.birdEscTimer=0;['ovBird1a','evBird','hpw'].forEach(id=>hide(id));
+      S.birdActive=false;S.birdEscTimer=0;['evBird','hpw'].forEach(id=>hide(id));
       S.love=Math.max(0,S.love-15);ui();
       sm('鳥に荒らされた…棒人間がしょんぼりしてる');
     }
