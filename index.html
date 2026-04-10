@@ -130,7 +130,7 @@ document.getElementById('titleScreen').addEventListener('click',()=>{
 
 const STAGES=['🌱 たね','🌿 め','🌷 つぼみ','🌸 まんかい','🍂 かれた','🌰 たねはっけん'];
 const MUSHROOM_LINE='きのこについてたあの子、元気かな';
-const MONOLOGUES=['酒のみてえな','お、花粉が人類に攻撃を仕掛けている','関西の人の「知らんけど」はもはや口癖なので深い意味はないな','「暗黙の了解だから！」って言った時点で暗黙じゃないよな','ふふふ～んふふふ～んへいへい！！（激しめの鼻歌）','また人間が走ってる。のんびりいこうね','地球から月の裏側が見えないのってなんかおもしろい','私はいつ生まれたのだっけ、、、？','今日も植物たちがかわいい！','桜の木で行われる定例会議の時期か、、、','雲って色の種類おおいよな～','落し物がわかりやすい場所に置かれてるとやさしさ感じるよな','今日の空、火星みたい。','お日様があたたかくて労働なんかしてられない','根っこがやたら育っていたりして、、、','葉っぱの形ってかわいいわ～','森が減っていく、、、'];
+const MONOLOGUES=['酒のみてえな','お、花粉が人類に攻撃を仕掛けている','関西の人の「知らんけど」はもはや口癖なので深い意味はないな','「暗黙の了解だから！」って言った時点で暗黙じゃないよな','ふふふ～んふふふ～んへいへい！！（激しめの鼻歌）','また人間が走ってる。のんびりいこうね','地球から月の裏側が見えないのってなんかおもしろい','私はいつ生まれたのだっけ、、、？','二日酔いしんどい','桜の木で行われる定例会議の時期か、、、','きのこ協会に怒られた、、、','落し物がわかりやすい場所に置かれてるとやさしさ感じるよな','今日の空、火星みたい。懐かしい','お日様があたたかくて労働なんかしてられない。お昼寝やっ','最近春と秋が短いよね','葉っぱの形ってかわいいわ～','森が減っていく、、、'];
 const SPEED_LABELS=['🐢 ゆっくり','🚶 ふつう','🏃 はやい！','⚡ むずかしい！'];
 
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),scene=document.getElementById('scene');
@@ -140,7 +140,7 @@ const hide=id=>{const e=el(id);if(e)e.style.display='none';}
 
 let S={water:60,sun:60,love:60,growth:0,stage:0,gen:1,
   birdActive:false,birdX:0,birdY:50,birdVy:1,birdVx:-2,birdHp:10,
-  birdWarn:false,birdWarnTimer:0,bird2Step:0,
+  birdWarn:false,birdWarnTimer:0,birdEscTimer:0,bird2Step:0,
   typhoonActive:false,supported:false,typhoonTimer:0,typhoonDir:1,
   witherTimer:0,sleeping:false,sleepTimer:0,showSleep:false,sleepTimer2:0,
   showSeedWait:false,seedWaitTimer:0,showBloom:false,bloomTimer:0,
@@ -152,7 +152,7 @@ let S={water:60,sun:60,love:60,growth:0,stage:0,gen:1,
 
 function sm(t){el('msg').textContent=t;}
 function ss(id,v){el(id).style.width=Math.max(0,Math.min(100,v))+'%';}
-function ui(){ss('bw',S.water);ss('bs',S.sun);ss('bl',S.love);el('sn').textContent=STAGES[S.stage];el('pb').style.width=Math.min(100,S.growth)+'%';el('gen').textContent=S.gen+'代目';}
+function ui(){ss('bw',S.water);ss('bs',S.sun);ss('bl',S.love);el('sn').textContent=STAGES[S.stage];el('pb').style.width=Math.min(100,S.growth/3)+'%';el('gen').textContent=S.gen+'代目';}
 function hideAllOv(){['ovBird1w','ovBird1a','ovBird2a','ovBird2b','ovTyphoon','ovBloom','ovCry','ovSleep','ovSeedWait','ovSing','evBird','evTy','hpw'].forEach(hide);el('ovMushroom').style.display='none';el('balloon').style.display='none';el('minigame').style.display='none';el('ty-arrow').style.display='none';}
 
 function showBalloon(txt){el('balloon-inner').textContent=txt;el('balloon').style.display='block';}
@@ -282,32 +282,36 @@ function doAct(t){
 function checkGrowth(){
   if(S.stage>=3)return;
   const avg=(S.water+S.sun+S.love)/3;
-  S.growth=Math.min(99.9,S.growth+(avg>50?6.0:1.5));
-  if(S.growth>=75&&S.stage<3){S.stage=3;S.showBloom=true;S.bloomTimer=300;S.witherTimer=700;sm('🌸 まんかい！棒人間が飛び上がって喜んだ！');show('ovBloom');}
-  else if(S.growth>=40&&S.stage<2)S.stage=2;
-  else if(S.growth>=5&&S.stage<1)S.stage=1;
+  S.growth=Math.min(399.9,S.growth+(avg>50?6.0:1.5));
+  if(S.growth>=300&&S.stage<3){S.stage=3;S.showBloom=true;S.bloomTimer=300;S.witherTimer=700;sm('🌸 まんかい！棒人間が飛び上がって喜んだ！');show('ovBloom');saveGame();}
+  else if(S.growth>=200&&S.stage<2)S.stage=2;
+  else if(S.growth>=48&&S.stage<1)S.stage=1;
   ui();
 }
 
 function wither(){S.stage=4;S.showCry=true;S.cryTimer=250;ui();show('ovCry');sm('お花が散っていく…でも綺麗だった');setTimeout(()=>{S.stage=5;ui();sm('枯れた花の中に種を見つけた！タップして次の代を植えよう🌰');},5000);}
-function newGen(){S.gen++;S.water=60;S.sun=60;S.love=60;S.growth=0;S.stage=0;S.witherTimer=0;S.birdActive=false;S.birdWarn=false;S.bird2Step=0;S.typhoonActive=false;hideAllOv();ui();S.showSeedWait=true;S.seedWaitTimer=150;show('ovSeedWait');sm(S.gen+'代目の種を植えた。わくわく待機中…🌱');}
+function newGen(){S.gen++;S.water=60;S.sun=60;S.love=60;S.growth=0;S.stage=0;S.witherTimer=0;S.birdActive=false;S.birdWarn=false;S.bird2Step=0;S.typhoonActive=false;hideAllOv();ui();S.showSeedWait=true;S.seedWaitTimer=150;show('ovSeedWait');sm(S.gen+'代目の種を植えた。わくわく待機中…🌱');saveGame();}
 
 function maybeEvent(){
-  if(S.birdActive||S.birdWarn||S.bird2Step>0||S.typhoonActive||S.stage<1||S.stage>=4||S.mgActive)return;
-  const r=Math.random();
-  if(r<0.0007){
-    if(Math.random()<0.5){
-      S.birdWarn=true;S.birdWarnTimer=90;S.birdHp=10;
-      S.birdX=cv.width+40;S.birdY=30+Math.random()*30;S.birdVx=-2;S.birdVy=(Math.random()-0.5)*2;
-      show('ovBird1w');sm('なんか来る気がする…！タップして！');
-    } else {
-      S.bird2Step=1;show('ovBird2a');sm('なんか来た…タップして！');
+  // 鳥・台風イベント（独立判定）
+  if(!S.birdActive&&!S.birdWarn&&S.bird2Step===0&&!S.typhoonActive&&S.stage>=1&&S.stage<4&&!S.mgActive){
+    const r=Math.random();
+    if(r<0.0018){
+      if(Math.random()<0.5){
+        S.birdWarn=true;S.birdWarnTimer=90;S.birdHp=10;
+        S.birdX=cv.width+40;S.birdY=30+Math.random()*30;S.birdVx=-2;S.birdVy=(Math.random()-0.5)*2;
+        show('ovBird1w');sm('なんか来る気がする…！タップして！');
+      } else {
+        S.bird2Step=1;show('ovBird2a');sm('なんか来た…タップして！');
+      }
+    } else if(r<0.003){
+      S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;
+      show('ovTyphoon');show('evTy');el('ty-arrow').style.display='block';el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';
+      sm('🌀 台風！'+(S.typhoonDir>0?'右':'左')+'にスワイプして支えて！');
     }
-  } else if(r<0.0013){
-    S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;
-    show('ovTyphoon');show('evTy');el('ty-arrow').style.display='block';el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';
-    sm('🌀 台風！'+(S.typhoonDir>0?'右':'左')+'にスワイプして支えて！');
-  } else if(!S.showMono&&!S.showMushroom&&S.stage>=1&&S.monoCooldown===0){
+  }
+  // 独り言（独立判定）
+  if(!S.showMono&&!S.showMushroom&&S.stage>=1&&S.monoCooldown===0&&!S.mgActive&&!S.birdActive&&!S.birdWarn&&!S.bird2Step&&!S.typhoonActive){
     S.monoCooldown=Math.floor(Math.random()*(900-480)+480);
     if(Math.random()<0.15){
       S.showMushroom=true;S.mushroomTimer=Math.floor(Math.random()*(900-480)+480);
@@ -337,7 +341,7 @@ function handleTap(cx,cy){
       S.birdHp--;
       el('hpf').style.width=(S.birdHp/10*100)+'%';
       el('birdLeft').textContent=S.birdHp;
-      if(S.birdHp<=0){S.birdActive=false;hide('evBird');hide('hpw');S.love=Math.min(100,S.love+18);ui();sm('棒人間が鳥を追い払った！お花は無事！');}
+      if(S.birdHp<=0){S.birdActive=false;S.birdEscTimer=0;hide('evBird');hide('hpw');S.love=Math.min(100,S.love+18);ui();sm('棒人間が鳥を追い払った！お花は無事！');}
       else sm('もう'+S.birdHp+'回当てて！');
     } else sm('外れた！鳥をよく狙って！');
     return;
@@ -560,17 +564,25 @@ function tick(){
     // 上下バウンド
     if(S.birdY<15){S.birdVy=Math.abs(S.birdVy);}
     if(S.birdY>cv.height-60){S.birdVy=-Math.abs(S.birdVy);}
-    // 左右折り返し
-    if(S.birdX<cv.width/2-20)S.birdVx=1.8;
-    if(S.birdX>cv.width+60){S.birdActive=false;hide('evBird');hide('hpw');hide('ovBird1a');S.love=Math.max(0,S.love-15);ui();sm('鳥に荒らされた…棒人間がしょんぼりしてる');}
+    // 左右バウンド（画面内を行き来する）
+    if(S.birdX<20){S.birdVx=Math.abs(S.birdVx);}
+    if(S.birdX>cv.width-20){S.birdVx=-Math.abs(S.birdVx);}
+    // 制限時間（600フレーム＝約10秒）で逃げる
+    S.birdEscTimer=(S.birdEscTimer||0)+1;
+    if(S.birdEscTimer>600){
+      S.birdActive=false;S.birdEscTimer=0;
+      hide('evBird');hide('hpw');hide('ovBird1a');
+      S.love=Math.max(0,S.love-15);ui();
+      sm('鳥に荒らされた…棒人間がしょんぼりしてる');
+    }
   }
   if(S.bird2Step===0&&false){}
   if(S.typhoonTimer>0){S.typhoonTimer--;if(S.typhoonTimer===0){S.typhoonActive=false;hide('evTy');hide('ovTyphoon');el('ty-arrow').style.display='none';if(!S.supported){S.love=Math.max(0,S.love-20);ui();sm('台風に耐えた…でも少しダメージを受けた');}else sm('棒人間が踏ん張った！お花は無事だった！');S.supported=false;}}
   if(S.sleepTimer>0){S.sleepTimer--;if(S.sleepTimer===0)S.sleeping=false;}
   if(S.sleepTimer2>0){S.sleepTimer2--;if(S.sleepTimer2===0){S.showSleep=false;hide('ovSleep');}}
   if(S.seedWaitTimer>0){S.seedWaitTimer--;if(S.seedWaitTimer===0){S.showSeedWait=false;hide('ovSeedWait');}}
-  if(S.bloomTimer>0)S.bloomTimer--;
-  if(S.cryTimer>0){S.cryTimer--;if(S.cryTimer===0){S.showCry=false;hide('ovCry');}}
+  if(S.bloomTimer>0){S.bloomTimer--;if(S.bloomTimer===0){hide('ovBloom');S.showBloom=false;}}
+  if(S.cryTimer>0)S.cryTimer--;
   if(S.singTimer>0){S.singTimer--;if(S.singTimer===0){S.showSing=false;hide('ovSing');}}
   if(S.monoTimer>0){S.monoTimer--;if(S.monoTimer===0){S.showMono=false;hideBalloon();}}if(S.monoCooldown>0)S.monoCooldown--;
   if(S.mushroomTimer>0){S.mushroomTimer--;if(S.mushroomTimer===0){S.showMushroom=false;el('ovMushroom').style.display='none';S.monoCooldown=Math.floor(Math.random()*(900-480)+480);}}
@@ -586,7 +598,7 @@ function tick(){
     S.friendX+=1.5;
     if(S.friendX>cv.width+40){S.friendPhase=0;S.friendActive=false;}
   }
-  if(frame%300===0&&!S.sleeping&&!S.birdActive&&!S.typhoonActive&&S.stage<4&&!S.mgActive&&S.friendPhase===0){
+  if(frame%300===0&&!S.sleeping&&!S.birdActive&&!S.birdWarn&&!S.bird2Step&&!S.typhoonActive&&S.stage<4&&!S.mgActive&&S.friendPhase===0){
     const ct=Math.floor(Math.random()*10);
     S.cutType=ct;
     if(ct===4){S.climbTimer=120;}
@@ -597,13 +609,46 @@ function tick(){
     else if(ct===9&&S.stage>=1){S.friendActive=true;S.friendX=cv.width+30;S.friendPhase=1;S.friendTimer=200;sm('なんか友達が来た');}
   }
   if(frame%220===0&&S.stage<4){S.water=Math.max(0,S.water-2);S.sun=Math.max(0,S.sun-1.5);ui();}
+  if(frame%1800===0)saveGame();
   maybeEvent();
   const W=cv.width,H=cv.height;
   drawBg(W,H);drawPlant(W,H);drawMan(W,H);drawBird(W,H);
   requestAnimationFrame(tick);
 }
 function hideBalloon(){el('balloon').style.display='none';}
-function startGame(){resize();show('ovSeedWait');S.showSeedWait=true;S.seedWaitTimer=150;tick();}
+
+function saveGame(){
+  const data={
+    water:S.water,sun:S.sun,love:S.love,
+    growth:S.growth,stage:S.stage,gen:S.gen,
+    dayTime:S.dayTime
+  };
+  try{localStorage.setItem('flowerGame',JSON.stringify(data));}catch(e){}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem('flowerGame');
+    if(!raw)return;
+    const data=JSON.parse(raw);
+    S.water=data.water||60;
+    S.sun=data.sun||60;
+    S.love=data.love||60;
+    S.growth=data.growth||0;
+    S.stage=data.stage||0;
+    S.gen=data.gen||1;
+    S.dayTime=data.dayTime||0;
+    ui();
+    sm(S.gen+'代目のお花、おかえり🌱');
+  }catch(e){}
+}
+function startGame(){
+  resize();
+  loadGame();
+  if(S.stage===0&&S.growth<5){
+    show('ovSeedWait');S.showSeedWait=true;S.seedWaitTimer=150;
+  }
+  tick();
+}
 </script>
 </body>
 </html>
