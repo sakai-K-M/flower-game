@@ -346,8 +346,8 @@ function handleTap(cx,cy){
     } else sm('外れた！鳥をよく狙って！');
     return;
   }
-  if(S.bird2Step===1){S.bird2Step=2;S.bird2TapDelay=60;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');return;}
-  if(S.bird2Step===2){if(S.bird2TapDelay>0)return;S.bird2Step=0;hide('ovBird2b');sm('びっくりした…');return;}
+  if(S.bird2Step===1){S.bird2Step=2;S.bird2TapDelay=80;S.bird2AutoTimer=0;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');return;}
+  if(S.bird2Step===2){if(S.bird2TapDelay>0){return;}S.bird2Step=0;S.bird2TapDelay=0;hide('ovBird2b');sm('びっくりした…');return;}
   if(S.typhoonActive)return;
   if(S.showMushroom){el('ovMushroom').style.display='none';S.showMushroom=false;S.mushroomTimer=0;return;}
   if(S.showBloom){hide('ovBloom');S.showBloom=false;return;}
@@ -439,7 +439,7 @@ function drawFriendBody(fx,base,walking){
     ctx.beginPath();ctx.moveTo(fx,base-18);ctx.lineTo(fx+9,base-3);ctx.stroke();
     // 吹き出し
     ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.roundRect(fx-30,base-72,60,18,6);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.rect(fx-30,base-72,60,18);ctx.fill();ctx.stroke();
     ctx.fillStyle='#333';ctx.font='9px sans-serif';ctx.textAlign='center';
     const lines=['なあなあ','さいきんどう？','それな〜','ほな〜'];
     ctx.fillText(lines[Math.floor(S.friendTimer/50)%lines.length],fx,base-59);
@@ -558,7 +558,7 @@ let frame=0;
 function tick(){
   frame++;S.frame=frame;S.dayTime=(S.dayTime+0.0004)%1;
   if(S.bird2TapDelay>0)S.bird2TapDelay--;
-  if(S.bird2AutoTimer>0){S.bird2AutoTimer--;if(S.bird2AutoTimer===0&&S.bird2Step===1){S.bird2Step=2;S.bird2TapDelay=60;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');}}
+  if(S.bird2AutoTimer>0&&S.bird2Step===1){S.bird2AutoTimer--;if(S.bird2AutoTimer===0){S.bird2Step=2;S.bird2TapDelay=80;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');}}
   if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');S.birdActive=true;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
   if(S.birdActive){
     S.birdX+=S.birdVx;
