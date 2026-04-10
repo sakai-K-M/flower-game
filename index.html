@@ -163,7 +163,7 @@ let leafInterval=null,leafEndTimeout=null;
 function startLeafGame(){
   if(S.mgActive)return;
   S.mgActive=true;S.mgType='sun';S.leafCleared=0;S.leafTotal=8;
-  el('mg-title').textContent='☀️ 落ち葉で日光が遮られちゃう！';
+  el('mg-title').textContent='☀️ ひなたへ！';
   el('mg-inst').textContent='落ち葉をタップして払おう！';
   el('mg-speed-lbl').textContent='';
   el('mg-track').style.display='none';el('mg-tap-btn').style.display='none';
@@ -283,7 +283,7 @@ function checkGrowth(){
   if(S.stage>=3)return;
   const avg=(S.water+S.sun+S.love)/3;
   S.growth=Math.min(399.9,S.growth+(avg>50?6.0:1.5));
-  if(S.growth>=300&&S.stage<3){S.stage=3;S.showBloom=true;S.bloomTimer=300;S.witherTimer=700;sm('🌸 満開！棒人間が飛び上がって喜んだ！');show('ovBloom');saveGame();}
+  if(S.growth>=300&&S.stage<3){S.stage=3;S.showBloom=true;S.bloomTimer=300;S.witherTimer=700;sm('🌸 まんかい！棒人間が飛び上がって喜んだ！');show('ovBloom');saveGame();}
   else if(S.growth>=200&&S.stage<2)S.stage=2;
   else if(S.growth>=48&&S.stage<1)S.stage=1;
   ui();
@@ -325,8 +325,9 @@ function maybeEvent(){
   }
 }
 
-scene.addEventListener('touchstart',e=>{S.swipeStartX=e.touches[0].clientX;handleTap(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
-scene.addEventListener('click',e=>handleTap(e.clientX,e.clientY));
+let _lastTouch=0;
+scene.addEventListener('touchstart',e=>{S.swipeStartX=e.touches[0].clientX;_lastTouch=Date.now();handleTap(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+scene.addEventListener('click',e=>{if(Date.now()-_lastTouch<500)return;handleTap(e.clientX,e.clientY);});
 scene.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-S.swipeStartX;if(Math.abs(dx)>30)handleSwipe(dx);},{passive:true});
 
 function handleTap(cx,cy){
@@ -478,7 +479,7 @@ function drawFriendBody(fx,base,walking){
     ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=1.5;
     ctx.beginPath();ctx.rect(fx-30,base-72,60,18);ctx.fill();ctx.stroke();
     ctx.fillStyle='#333';ctx.font='9px sans-serif';ctx.textAlign='center';
-    const lines=['なあなあ','さいきんどう？','それな〜','ほな〜'];
+    const lines=['なあなあ','きのこがさあ','お酒？','またね'];
     ctx.fillText(lines[Math.floor(S.friendTimer/50)%lines.length],fx,base-59);
     ctx.textAlign='left';
   }
@@ -676,7 +677,7 @@ function loadGame(){
     S.gen=data.gen||1;
     S.dayTime=data.dayTime||0;
     ui();
-    sm(S.gen+'代目のお花、ただいま🌱');
+    sm(S.gen+'代目のお花、おかえり🌱');
   }catch(e){}
 }
 function startGame(){
