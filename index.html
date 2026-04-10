@@ -331,7 +331,19 @@ scene.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-S.swi
 
 function handleTap(cx,cy){
   if(S.mgActive)return;
-  if(S.birdWarn){S.birdWarn=false;S.birdWarnTimer=0;hide('ovBird1w');hide('ovBird2a');hide('ovBird2b');S.bird2Step=0;S.bird2TapDelay=0;S.birdActive=true;S.birdHp=10;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');return;}
+
+  // 鳥パターン1・警告タップ→ゲーム開始
+  if(S.birdWarn){
+    S.birdWarn=false;S.birdWarnTimer=0;
+    ['ovBird1w','ovBird2a','ovBird2b'].forEach(hide);
+    S.bird2Step=0;S.bird2TapDelay=0;S.bird2AutoTimer=0;
+    S.birdActive=true;S.birdHp=10;S.birdEscTimer=0;
+    show('ovBird1a');show('evBird');show('hpw');
+    el('hpf').style.width='100%';el('birdLeft').textContent='10';
+    sm('🐦 鳥を直接タップして追い払え！');return;
+  }
+
+  // 鳥パターン1・ゲーム中タップ
   if(S.birdActive){
     const rect=scene.getBoundingClientRect();
     const tx=(cx-rect.left)/rect.width*cv.width;
@@ -340,13 +352,30 @@ function handleTap(cx,cy){
       S.birdHp--;
       el('hpf').style.width=(S.birdHp/10*100)+'%';
       el('birdLeft').textContent=S.birdHp;
-      if(S.birdHp<=0){S.birdActive=false;S.birdEscTimer=0;hide('evBird');hide('hpw');hide('ovBird1a');S.love=Math.min(100,S.love+18);ui();sm('棒人間が鳥を追い払った！お花は無事！');}
-      else sm('もう'+S.birdHp+'回当てて！');
+      if(S.birdHp<=0){
+        S.birdActive=false;S.birdEscTimer=0;
+        ['ovBird1a','evBird','hpw'].forEach(hide);
+        S.love=Math.min(100,S.love+18);ui();
+        sm('棒人間が鳥を追い払った！お花は無事！');
+      } else sm('もう'+S.birdHp+'回当てて！');
     } else sm('外れた！鳥をよく狙って！');
     return;
   }
-  if(S.bird2Step===1){S.bird2Step=2;S.bird2TapDelay=80;S.bird2AutoTimer=0;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');return;}
-  if(S.bird2Step===2){if(S.bird2TapDelay>0){return;}S.bird2Step=0;S.bird2TapDelay=0;hide('ovBird2b');sm('びっくりした…');return;}
+
+  // 鳥パターン2・1枚目タップ→2枚目へ
+  if(S.bird2Step===1){
+    S.bird2Step=2;S.bird2TapDelay=80;S.bird2AutoTimer=0;
+    hide('ovBird2a');show('ovBird2b');
+    sm('…ただ見てただけみたい。よかった😮‍💨');return;
+  }
+
+  // 鳥パターン2・2枚目タップ→終了
+  if(S.bird2Step===2){
+    if(S.bird2TapDelay>0)return;
+    S.bird2Step=0;S.bird2TapDelay=0;
+    hide('ovBird2b');sm('びっくりした…');return;
+  }
+
   if(S.typhoonActive)return;
   if(S.showMushroom){el('ovMushroom').style.display='none';S.showMushroom=false;S.mushroomTimer=0;return;}
   if(S.showBloom){hide('ovBloom');S.showBloom=false;return;}
@@ -354,7 +383,6 @@ function handleTap(cx,cy){
   if(S.showSeedWait){hide('ovSeedWait');S.showSeedWait=false;return;}
   if(S.stage===5)newGen();
 }
-
 function handleSwipe(dx){if(S.typhoonActive){const ok=(S.typhoonDir>0&&dx>30)||(S.typhoonDir<0&&dx<-30);if(ok){S.supported=true;S.love=Math.min(100,S.love+8);ui();sm('棒人間が踏ん張った！がんばれ！');}else sm('逆！'+(S.typhoonDir>0?'右':'左')+'にスワイプ！');}}
 
 function resize(){cv.width=scene.offsetWidth;cv.height=scene.offsetHeight;}
@@ -571,7 +599,7 @@ function tick(){
     // 制限時間（600フレーム＝約10秒）で逃げる
     S.birdEscTimer=(S.birdEscTimer||0)+1;
     if(S.birdEscTimer>600){
-      S.birdActive=false;S.birdEscTimer=0;hide('evBird');hide('hpw');hide('ovBird1a');
+      S.birdActive=false;S.birdEscTimer=0;['ovBird1a','evBird','hpw'].forEach(id=>hide(id));
       S.love=Math.max(0,S.love-15);ui();
       sm('鳥に荒らされた…棒人間がしょんぼりしてる');
     }
