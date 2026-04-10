@@ -331,7 +331,7 @@ scene.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-S.swi
 
 function handleTap(cx,cy){
   if(S.mgActive)return;
-  if(S.birdWarn){S.birdWarn=false;S.birdWarnTimer=0;hide('ovBird1w');S.birdActive=true;S.birdHp=10;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');return;}
+  if(S.birdWarn){S.birdWarn=false;S.birdWarnTimer=0;hide('ovBird1w');hide('ovBird2a');hide('ovBird2b');S.bird2Step=0;S.bird2TapDelay=0;S.birdActive=true;S.birdHp=10;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');return;}
   if(S.birdActive){
     const rect=scene.getBoundingClientRect();
     const tx=(cx-rect.left)/rect.width*cv.width;
@@ -558,7 +558,7 @@ function tick(){
   frame++;S.frame=frame;S.dayTime=(S.dayTime+0.0004)%1;
   if(S.bird2TapDelay>0)S.bird2TapDelay--;
   if(S.bird2AutoTimer>0&&S.bird2Step===1){S.bird2AutoTimer--;if(S.bird2AutoTimer===0){S.bird2Step=2;S.bird2TapDelay=80;hide('ovBird2a');show('ovBird2b');sm('…ただ見てただけみたい。よかった😮‍💨');}}
-  if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');S.birdActive=true;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
+  if(S.birdWarnTimer>0){S.birdWarnTimer--;if(S.birdWarnTimer===0&&S.birdWarn){S.birdWarn=false;hide('ovBird1w');hide('ovBird2a');hide('ovBird2b');S.bird2Step=0;S.bird2TapDelay=0;S.birdActive=true;S.birdHp=10;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');}}
   if(S.birdActive){
     S.birdX+=S.birdVx;
     S.birdY+=S.birdVy;
