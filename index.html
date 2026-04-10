@@ -130,7 +130,7 @@ document.getElementById('titleScreen').addEventListener('click',()=>{
 
 const STAGES=['🌱 たね','🌿 め','🌷 つぼみ','🌸 まんかい','🍂 かれた','🌰 たねはっけん'];
 const MUSHROOM_LINE='きのこについてたあの子、元気かな';
-const MONOLOGUES=['酒のみてえな','お、花粉が人類に攻撃を仕掛けている','関西の人の「知らんけど」はもはや口癖なので深い意味はないな','「暗黙の了解だから！」って言った時点で暗黙じゃないよな','ふふふ～んふふふ～んへいへい！！（激しめの鼻歌）','また人間が走ってる。のんびりいこうね','地球から月の裏側が見えないのってなんかおもしろい','私はいつ生まれたのだっけ、、、？','今日も植物たちがかわいい！','桜の木で行われる定例会議の時期か、、、','雲ってずっと見てると動いてるんよな。仕事してる','水って無味無臭なのに飲むとおいしいの不思議じゃない？','今日のお空、推しの色してる','お日様があたたかくて眠たくなってきた…','根っこってどこまで伸びてるんやろ','葉っぱの形って全部ちがうの、考えた人天才やな','お花さんのことが好きすぎる問題'];
+const MONOLOGUES=['酒のみてえな','お、花粉が人類に攻撃を仕掛けている','関西の人の「知らんけど」はもはや口癖なので深い意味はないな','「暗黙の了解だから！」って言った時点で暗黙じゃないよな','ふふふ～んふふふ～んへいへい！！（激しめの鼻歌）','また人間が走ってる。のんびりいこうね','地球から月の裏側が見えないのってなんかおもしろい','私はいつ生まれたのだっけ、、、？','今日も植物たちがかわいい！','桜の木で行われる定例会議の時期か、、、','雲って色の種類おおいよな～','落し物がわかりやすい場所に置かれてるとやさしさ感じるよな','今日の空、火星みたい。','お日様があたたかくて労働なんかしてられない','根っこがやたら育っていたりして、、、','葉っぱの形ってかわいいわ～','森が減っていく、、、'];
 const SPEED_LABELS=['🐢 ゆっくり','🚶 ふつう','🏃 はやい！','⚡ むずかしい！'];
 
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),scene=document.getElementById('scene');
@@ -307,8 +307,8 @@ function maybeEvent(){
     S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;
     show('ovTyphoon');show('evTy');el('ty-arrow').style.display='block';el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';
     sm('🌀 台風！'+(S.typhoonDir>0?'右':'左')+'にスワイプして支えて！');
-  } else if(!S.showMono&&!S.showMushroom&&S.stage>=1&&S.monoWaitTimer===0&&S.monoCooldown===0){
-    S.monoCooldown=Math.floor(Math.random()*(900-480)+480); // 8〜15秒のランダム休憩
+  } else if(!S.showMono&&!S.showMushroom&&S.stage>=1&&S.monoCooldown===0){
+    S.monoCooldown=Math.floor(Math.random()*(900-480)+480);
     if(Math.random()<0.15){
       S.showMushroom=true;S.mushroomTimer=Math.floor(Math.random()*(900-480)+480);
       el('ovMushroom').style.display='flex';
