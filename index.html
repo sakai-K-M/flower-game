@@ -294,7 +294,7 @@ function newGen(){S.gen++;S.water=60;S.sun=60;S.love=60;S.growth=0;S.stage=0;S.w
 
 function maybeEvent(){
   // 鳥・台風イベント（独立判定）
-  if(!S.birdActive&&!S.birdWarn&&S.bird2Step===0&&!S.typhoonActive&&S.stage>=1&&S.stage<4&&!S.mgActive){
+  if(!S.birdActive&&!S.birdWarn&&S.bird2Step===0&&!S.typhoonActive&&S.stage>=1&&S.stage<4&&!S.mgActive&&!S.showMushroom){
     const r=Math.random();
     if(r<0.0018){
       if(Math.random()<0.5){
@@ -333,7 +333,6 @@ function handleTap(cx,cy){
   if(S.mgActive)return;
   if(S.birdWarn){S.birdWarn=false;S.birdWarnTimer=0;hide('ovBird1w');S.birdActive=true;S.birdHp=10;show('ovBird1a');show('evBird');show('hpw');el('hpf').style.width='100%';el('birdLeft').textContent='10';sm('🐦 鳥を直接タップして追い払え！');return;}
   if(S.birdActive){
-    hide('ovBird1a');
     const rect=scene.getBoundingClientRect();
     const tx=(cx-rect.left)/rect.width*cv.width;
     const ty=(cy-rect.top)/rect.height*cv.height;
@@ -341,7 +340,7 @@ function handleTap(cx,cy){
       S.birdHp--;
       el('hpf').style.width=(S.birdHp/10*100)+'%';
       el('birdLeft').textContent=S.birdHp;
-      if(S.birdHp<=0){S.birdActive=false;S.birdEscTimer=0;hide('evBird');hide('hpw');S.love=Math.min(100,S.love+18);ui();sm('棒人間が鳥を追い払った！お花は無事！');}
+      if(S.birdHp<=0){S.birdActive=false;S.birdEscTimer=0;hide('evBird');hide('hpw');hide('ovBird1a');S.love=Math.min(100,S.love+18);ui();sm('棒人間が鳥を追い払った！お花は無事！');}
       else sm('もう'+S.birdHp+'回当てて！');
     } else sm('外れた！鳥をよく狙って！');
     return;
@@ -572,8 +571,7 @@ function tick(){
     // 制限時間（600フレーム＝約10秒）で逃げる
     S.birdEscTimer=(S.birdEscTimer||0)+1;
     if(S.birdEscTimer>600){
-      S.birdActive=false;S.birdEscTimer=0;
-      hide('evBird');hide('hpw');hide('ovBird1a');
+      S.birdActive=false;S.birdEscTimer=0;hide('evBird');hide('hpw');hide('ovBird1a');
       S.love=Math.max(0,S.love-15);ui();
       sm('鳥に荒らされた…棒人間がしょんぼりしてる');
     }
