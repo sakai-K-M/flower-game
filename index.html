@@ -498,11 +498,11 @@ function drawPlant(W,H){
 
   // イラスト画像で描画
   // stage1=め(1/4), stage2=つぼみ(1/3), stage3=さいた(1/3), stage4=かれた(1/4)
-  let imgKey=null, sizeRatio=0;
-  if(s===1){imgKey='me'; sizeRatio=0.25;}
-  else if(s===2){imgKey='tsubomi'; sizeRatio=0.33;}
-  else if(s===3){imgKey='hana'; sizeRatio=0.33;}
-  else if(s===4){imgKey='kareta'; sizeRatio=0.25;}
+  let imgKey=null, sizeRatio=0, offsetY=0;
+  if(s===1){imgKey='me'; sizeRatio=0.25; offsetY=15;}
+  else if(s===2){imgKey='tsubomi'; sizeRatio=0.33; offsetY=10;}
+  else if(s===3){imgKey='hana'; sizeRatio=0.33; offsetY=10;}
+  else if(s===4){imgKey='kareta'; sizeRatio=0.25; offsetY=15;}
 
   if(imgKey){
     const pimg=PLANT_IMGS[imgKey];
@@ -510,7 +510,7 @@ function drawPlant(W,H){
       const ph=H*sizeRatio;
       const pw=pimg.naturalWidth/pimg.naturalHeight*ph;
       const px=cx-pw/2;
-      const py=base-ph+10;
+      const py=base-ph+10+offsetY;
       ctx.drawImage(pimg,px,py,pw,ph);
       ctx.restore();
       return;
