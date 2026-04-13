@@ -459,7 +459,7 @@ function applyResult(type,result){
 
 function doAct(t){
   if(S.birdActive||S.birdWarn||S.birdShowOwl||S.bird2Step>0){sm('まず鳥をなんとかして！');return;}
-  if(S.typhoonActive){sm('台風がきた！スワイプで支えて！');return;}
+if(S.typhoonActive){sm('台風がきた！'+(S.typhoonDir>0?'右':'左')+'にスワイプして！');return;}
   if(S.stage>=4){sm('今は種を見つけるのを待って…');return;}
   if(S.mgActive)return;
   if(t==='rest'){S.sleeping=true;S.sleepTimer=160;S.showSleep=true;S.sleepTimer2=100;S.love=Math.min(100,S.love+10);show('ovSleep');sm('芽の横でごろんと昼寝した');checkGrowth();ui();}
@@ -492,7 +492,7 @@ function maybeEvent(){
         S.bird2Step=1;S.bird2AutoTimer=300;show('ovBird2a');sm('なんか来た…タップして！');
       }
     } else if(r<0.003){
-      S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;
+    S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;S.typhoonCount=0;
       show('ovTyphoon');show('evTy');el('ty-arrow').style.display='block';el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';
       sm('🌀 台風！'+(S.typhoonDir>0?'右':'左')+'にスワイプして支えて！');
     }
@@ -581,8 +581,7 @@ function handleTap(cx,cy){
   if(S.showSeedWait){hide('ovSeedWait');S.showSeedWait=false;return;}
   if(S.stage===5)newGen();
 }
-function handleSwipe(dx){if(S.typhoonActive){const ok=(S.typhoonDir>0&&dx>30)||(S.typhoonDir<0&&dx<-30);if(ok){S.supported=true;S.love=Math.min(100,S.love+8);ui();sm('棒人間が踏ん張った！がんばれ！');}else sm('逆！'+(S.typhoonDir>0?'右':'左')+'にスワイプ！');}}
-
+function handleSwipe(dx){if(S.typhoonActive){const ok=(S.typhoonDir>0&&dx>30)||(S.typhoonDir<0&&dx<-30);if(ok){S.typhoonCount++;S.typhoonDir=Math.random()<0.5?1:-1;el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';if(S.typhoonCount>=10){S.typhoonActive=false;hide('evTy');hide('ovTyphoon');el('ty-arrow').style.display='none';S.supported=true;sm('棒人間が踏ん張った！台風を乗り越えた！');}else{sm('ナイス！あと'+(10-S.typhoonCount)+'回！');}}else sm('逆！'+(S.typhoonDir>0?'右':'左')+'にスワイプして！');}}
 function resize(){
   // UI部分の高さを取得
   const topbar = document.querySelector('.topbar');
@@ -873,7 +872,7 @@ function tick(){
     }
   }
   if(S.bird2Step===0&&false){}
-  if(S.typhoonTimer>0){S.typhoonTimer--;if(S.typhoonTimer===0){S.typhoonActive=false;hide('evTy');hide('ovTyphoon');el('ty-arrow').style.display='none';if(!S.supported){S.love=Math.max(0,S.love-20);ui();sm('台風に耐えた…でも少しダメージを受けた');}else sm('棒人間が踏ん張った！お花は無事だった！');S.supported=false;}}
+S.typhoonTimer--;if(S.typhoonTimer===0){S.typhoonActive=false;S.typhoonCount=0;hide('evTy');hide('ovTyphoon');el('ty-arrow').style.display='none';if(S.typhoonCount<10){S.love=Math.max(0,S.love-20);ui();sm('台風に耐えた…でも少しダメージを受けた');}else sm('棒人間が踏ん張った！お花は無事だった！');S.supported=false;}
   if(S.sleepTimer>0){S.sleepTimer--;if(S.sleepTimer===0)S.sleeping=false;}
   if(S.sleepTimer2>0){S.sleepTimer2--;if(S.sleepTimer2===0){S.showSleep=false;hide('ovSleep');}}
   if(S.seedWaitTimer>0){S.seedWaitTimer--;if(S.seedWaitTimer===0){S.showSeedWait=false;hide('ovSeedWait');}}
