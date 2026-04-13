@@ -581,7 +581,7 @@ function handleTap(cx,cy){
   if(S.showSeedWait){hide('ovSeedWait');S.showSeedWait=false;return;}
   if(S.stage===5)newGen();
 }
-function handleSwipe(dx){if(S.typhoonActive){const ok=(S.typhoonDir>0&&dx>30)||(S.typhoonDir<0&&dx<-30);if(ok){S.typhoonCount++;S.typhoonDir=Math.random()<0.5?1:-1;el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';if(S.typhoonCount>=10){S.typhoonActive=false;hide('evTy');hide('ovTyphoon');el('ty-arrow').style.display='none';S.supported=true;sm('棒人間が踏ん張った！台風を乗り越えた！');}else{sm('ナイス！あと'+(10-S.typhoonCount)+'回！');}}else sm('逆！'+(S.typhoonDir>0?'右':'左')+'にスワイプして！');}}
+function handleSwipe(dx){if(S.typhoonActive){const ok=(S.typhoonDir>0&&dx>30)||(S.typhoonDir<0&&dx<-30);if(ok){S.typhoonCount++;if(S.typhoonCount>=10){S.typhoonActive=false;hide('evTy');hide('ovTyphoon');el('ty-arrow').style.display='none';S.supported=true;sm('棒人間が踏ん張った！台風を乗り越えた！');}else{S.typhoonDir=Math.random()<0.5?1:-1;el('ty-arrow').style.display='block';el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';sm('ナイス！あと'+(10-S.typhoonCount)+'回！　'+(S.typhoonDir>0?'次は右！':'次は左！'));}}else sm('逆！'+(S.typhoonDir>0?'右':'左')+'にスワイプして！');}}
 function resize(){
   // UI部分の高さを取得
   const topbar = document.querySelector('.topbar');
