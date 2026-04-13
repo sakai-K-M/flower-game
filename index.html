@@ -372,7 +372,7 @@ function startSingGame(){
   S.singResult='fail';
   const ctx=canvas.getContext('2d');
   const W=canvas.width,H=canvas.height;
-  const DURATION=5000;
+  const DURATION=10000;
   const SCROLL_SPEED=W/DURATION;
   const extPoints=[];
   const EXT_SEGS=20;
@@ -404,6 +404,7 @@ let playerY=H/2,scrollX=0,startTime=null,failed=false,animId=null,started=false,
     scrollX=SCROLL_SPEED*elapsed;
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
+    if(grace){ctx.fillStyle='rgba(255,255,255,0.8)';ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText('音程バーをなぞろう！',W/2,30);}
     ctx.beginPath();
     for(let px=0;px<=W;px+=2){const ly=getLineY(px+scrollX);if(px===0)ctx.moveTo(px,ly-TOLERANCE);else ctx.lineTo(px,ly-TOLERANCE);}
     for(let px=W;px>=0;px-=2){const ly=getLineY(px+scrollX);ctx.lineTo(px,ly+TOLERANCE);}
