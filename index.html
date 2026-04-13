@@ -103,7 +103,7 @@ button.ab:active{transform:scale(0.94);}
       <button id="mg-tap-btn" onclick="mgTap()">👆</button>
       <div id="love-count"></div>
       <div id="leaf-count"></div>
-      <canvas id="sing-canvas" width="320" height="160" style="display:none;border-radius:12px;touch-action:none;"></canvas>
+      <canvas id="sing-canvas" width="320" height="160" style="display:none;border-radius:12px;touch-action:none;position:relative;z-index:1;"></canvas>
 <div id="sing-miss" style="display:none;font-size:1.4em;color:#ff4444;font-weight:bold;text-align:center;margin-top:8px;">音外れ！🎵</div>
 <div id="mg-result"></div>
     </div>
@@ -205,6 +205,7 @@ let haraiLeaves=[],haraiOrder=[],haraiNextIdx=0,haraiSwipeStart=null;
 
 function startLeafGame(){
   if(S.mgActive)return;
+  el('sing-canvas').style.display='none';el('sing-miss').style.display='none';
   S.mgActive=true;S.mgType='sun';
   el('mg-title').textContent='☀️ ひなたへ！';
   el('mg-inst').textContent='上の葉から順にスワイプして払おう！';
@@ -313,7 +314,9 @@ function finishLeaf(result){
   const area=el('leaf-area');
   area.innerHTML='';area.style.display='none';
   el('mg-track').style.display='block';el('mg-tap-btn').style.display='flex';
-  const res=el('mg-result');res.style.display='block';
+  el('sing-canvas').style.display='none';el('sing-miss').style.display='none';
+ el('sing-canvas').style.display='none';el('sing-miss').style.display='none';
+const res=el('mg-result');res.style.display='block';
   if(result==='great')res.textContent='🌟 全部払えた！気持ちいい！';
   else res.textContent='😅 葉っぱが残っちゃった…';
   setTimeout(()=>{el('minigame').style.display='none';applyResult('sun',result==='great'?'great':'fail');},800);
@@ -325,7 +328,9 @@ function startMg(type){
   if(S.mgActive)return;
   if(type==='sun'){startLeafGame();return;}
   S.mgActive=true;S.mgType=type;S.mgPos=50;S.mgDir=1;
-  el('mg-result').style.display='none';el('love-count').style.display='none';
+  el('mg-result').style.display='none';
+if(el('sing-canvas')){const c=el('sing-canvas');c.style.display='none';const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}
+  if(el('sing-miss'))el('sing-miss').style.display='none';el('love-count').style.display='none';
   el('leaf-area').style.display='none';el('leaf-count').style.display='none';
   el('mg-track').style.display='block';el('mg-tap-btn').style.display='flex';
   el('minigame').style.display='flex';
