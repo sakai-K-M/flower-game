@@ -103,7 +103,9 @@ button.ab:active{transform:scale(0.94);}
       <button id="mg-tap-btn" onclick="mgTap()">👆</button>
       <div id="love-count"></div>
       <div id="leaf-count"></div>
-      <div id="mg-result"></div>
+      <canvas id="sing-canvas" width="320" height="160" style="display:none;border-radius:12px;touch-action:none;"></canvas>
+<div id="sing-miss" style="display:none;font-size:1.4em;color:#ff4444;font-weight:bold;text-align:center;margin-top:8px;">音外れ！🎵</div>
+<div id="mg-result"></div>
     </div>
   </div>
   <div class="msg" id="msg">棒人間が種をそっと土に植えた…</div>
@@ -345,26 +347,94 @@ function startMg(type){
       if(S.mgPos>=98)S.mgDir=-1;if(S.mgPos<=2)S.mgDir=1;
       el('mg-needle').style.left=S.mgPos+'%';
     },30);
-  } else if(type==='love'){
+ } else if(type==='love'){
     el('mg-title').textContent='🎵 うたう！';
     el('mg-speed-lbl').textContent='';
-    el('mg-inst').textContent='5秒間ひたすらタップ！';
+    el('mg-inst').textContent='ラインをなぞってね！';
     btn.textContent='🎵';btn.className='love';
-    el('mg-green').style.left='0%';el('mg-green').style.width='0%';
+    el('mg-green').style.width='0%';
     el('mg-needle').style.left='0%';
-    S.loveTap=0;el('love-count').style.display='block';el('love-count').textContent='タップ数: 0';
-    setTimeout(finishMg,5000);
+    el('love-count').style.display='none';
+    startSingGame();
   }
 }
 function mgTap(){
   if(!S.mgActive)return;
-  if(S.mgType==='love'){S.loveTap++;el('love-count').textContent='タップ数: '+S.loveTap;el('mg-needle').style.left=Math.min(100,S.loveTap*5)+'%';return;}
+ if(S.mgType==='love'){return;}
   if(S.mgType==='water'){if(mgInterval)clearInterval(mgInterval);finishMg();}
 }
+function startSingGame(){
+  const canvas=el('sing-canvas');
+  const missEl=el('sing-miss');
+  if(!canvas)return;
+  canvas.style.display='block';
+  missEl.style.display='none';
+  S.singResult='fail';
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const DURATION=5000;
+  const SCROLL_SPEED=W/DURATION;
+  const extPoints=[];
+  const EXT_SEGS=20;
+  for(let i=0;i<=EXT_SEGS;i++){extPoints.push({x:(W*2/EXT_SEGS)*i,y:H*0.3+Math.random()*H*0.4});}
+  function getLineY(x){
+    for(let i=0;i<extPoints.length-1;i++){
+      const p0=extPoints[i],p1=extPoints[i+1];
+      if(x>=p0.x&&x<=p1.x){
+        const t=(x-p0.x)/(p1.x-p0.x),tt=t,tt2=t*t,tt3=t*t*t;
+        const p_1=extPoints[Math.max(0,i-1)],p2=extPoints[Math.min(extPoints.length-1,i+2)];
+        return 0.5*((2*p0.y)+(-p_1.y+p1.y)*tt+(2*p_1.y-5*p0.y+4*p1.y-p2.y)*tt2+(-p_1.y+3*p0.y-3*p1.y+p2.y)*tt3);
+      }
+    }
+    return H/2;
+  }
+  const TOLERANCE=28,PLAYER_X=60;
+let playerY=H/2,scrollX=0,startTime=null,failed=false,animId=null,started=false,grace=true;
+  setTimeout(()=>{grace=false;},1500);
+  function getRelY(e){const rect=canvas.getBoundingClientRect();const clientY=e.touches?e.touches[0].clientY:e.clientY;return clientY-rect.top;}
+  function onMove(e){if(!S.mgActive||failed)return;e.preventDefault();playerY=Math.max(0,Math.min(H,getRelY(e)));started=true;}
+  canvas.addEventListener('mousemove',onMove);
+  canvas.addEventListener('touchmove',onMove,{passive:false});
+  canvas.addEventListener('mousedown',onMove);
+  canvas.addEventListener('touchstart',onMove,{passive:false});
+  function draw(ts){
+    if(!S.mgActive){cancelAnimationFrame(animId);return;}
+    if(!startTime)startTime=ts;
+    const elapsed=ts-startTime;
+    scrollX=SCROLL_SPEED*elapsed;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
+    ctx.beginPath();
+    for(let px=0;px<=W;px+=2){const ly=getLineY(px+scrollX);if(px===0)ctx.moveTo(px,ly-TOLERANCE);else ctx.lineTo(px,ly-TOLERANCE);}
+    for(let px=W;px>=0;px-=2){const ly=getLineY(px+scrollX);ctx.lineTo(px,ly+TOLERANCE);}
+    ctx.closePath();ctx.fillStyle='rgba(100,220,180,0.25)';ctx.fill();
+    ctx.beginPath();
+    for(let px=0;px<=W;px+=2){const ly=getLineY(px+scrollX);if(px===0)ctx.moveTo(px,ly);else ctx.lineTo(px,ly);}
+    ctx.strokeStyle='#4eeebb';ctx.lineWidth=3;ctx.shadowColor='#4eeebb';ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;
+    const lineY=getLineY(PLAYER_X+scrollX);
+    const onLine=Math.abs(playerY-lineY)<=TOLERANCE;
+    ctx.beginPath();ctx.arc(PLAYER_X,playerY,12,0,Math.PI*2);
+    ctx.fillStyle=onLine?'#ffdd57':'#ff4444';ctx.shadowColor=onLine?'#ffdd57':'#ff4444';ctx.shadowBlur=16;ctx.fill();ctx.shadowBlur=0;
+    if(started&&!grace&&!failed&&!onLine){
+      failed=true;S.singResult='fail';missEl.style.display='block';
+      cancelAnimationFrame(animId);
+      canvas.removeEventListener('mousemove',onMove);canvas.removeEventListener('touchmove',onMove);
+      setTimeout(()=>{finishMg();},700);return;
+    }
+    if(elapsed>=DURATION){
+      cancelAnimationFrame(animId);
+      canvas.removeEventListener('mousemove',onMove);canvas.removeEventListener('touchmove',onMove);
+      S.singResult='great';finishMg();return;
+    }
+    animId=requestAnimationFrame(draw);
+  }
+  animId=requestAnimationFrame(draw);
+}
+
 function finishMg(){
   if(!S.mgActive)return;S.mgActive=false;if(mgInterval)clearInterval(mgInterval);
   let result='fail';
-  if(S.mgType==='love'){result=S.loveTap>=15?'great':S.loveTap>=8?'success':'fail';}
+ if(S.mgType==='love'){result=S.singResult||'fail';}
   else{const gl=parseFloat(el('mg-green').style.left),gr=gl+parseFloat(el('mg-green').style.width);if(S.mgPos>=gl&&S.mgPos<=gr){result=Math.abs(S.mgPos-(gl+gr)/2)<5?'great':'success';}}
   const res=el('mg-result');res.style.display='block';
   res.textContent=result==='great'?'🌟 大成功！':result==='success'?'✨ 成功！':'😅 失敗…';
