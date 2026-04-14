@@ -93,6 +93,7 @@ button.ab:active{transform:scale(0.94);}
     <div class="evb bi" id="evBird">🐦 鳥を直接タップ！あと<span id="birdLeft">10</span>回！</div>
     <div class="evb ty" id="evTy">🌀 風向きと逆にスワイプ！</div>
     <div id="ty-arrow">👉</div>
+<div id="ovDrought" style="display:none;position:absolute;top:0;left:0;right:0;background:rgba(0,80,160,0.82);color:#fff;font-size:14px;text-align:center;padding:7px 4px;z-index:20;pointer-events:none;">💧 水不足！ボタンをタップしてジャンプ！</div>
     <div id="balloon"><div id="balloon-inner"></div></div>
     <div id="minigame">
       <div id="mg-title"></div>
@@ -460,6 +461,14 @@ function applyResult(type,result){
 function doAct(t){
   if(S.birdActive||S.birdWarn||S.birdShowOwl||S.bird2Step>0){sm('まず鳥をなんとかして！');return;}
 if(S.typhoonActive){sm('台風がきた！'+(S.typhoonDir>0?'右':'左')+'にスワイプして！');return;}
+if(S.droughtActive){
+  if(!S.droughtJumping){
+    S.droughtJumping=true;
+    S.droughtJumpH=0;
+    S.droughtJumpVy=14;
+  }
+  return;
+}
   if(S.stage>=4){sm('今は種を見つけるのを待って…');return;}
   if(S.mgActive)return;
   if(t==='rest'){S.sleeping=true;S.sleepTimer=160;S.showSleep=true;S.sleepTimer2=100;S.love=Math.min(100,S.love+10);show('ovSleep');sm('芽の横でごろんと昼寝した');checkGrowth();ui();}
@@ -479,9 +488,75 @@ function checkGrowth(){
 function wither(){S.stage=4;S.showCry=true;S.cryTimer=250;ui();show('ovCry');sm('お花が散っていく…でも綺麗だった');setTimeout(()=>{S.stage=5;ui();sm('枯れた花の中に種を見つけた！タップして次の代を植えよう🌰');},5000);}
 function newGen(){S.gen++;S.water=60;S.sun=60;S.love=60;S.growth=0;S.stage=0;S.witherTimer=0;S.birdActive=false;S.birdWarn=false;S.bird2Step=0;S.typhoonActive=false;hideAllOv();ui();S.showSeedWait=true;S.seedWaitTimer=150;show('ovSeedWait');sm(S.gen+'代目の種を植えた。わくわく待機中…🌱');saveGame();}
 
+function updateDrought(W,H){
+  const base=H-36;
+  if(!S.droughtObstacles) S.droughtObstacles=[];
+  S.droughtTimer++;
+  if(!S.droughtNextSpawn) S.droughtNextSpawn = 60 + Math.floor(Math.random()*40);
+  S.droughtNextSpawn--;
+  if(S.droughtCount<8 && S.droughtNextSpawn<=0){
+    const types=['🪨','🍄'];
+    S.droughtObstacles.push({
+      x:W+30,
+      type:types[Math.floor(Math.random()*types.length)]
+    });
+    S.droughtCount++;
+    S.droughtNextSpawn = 55 + Math.floor(Math.random()*60);
+  }
+  S.droughtObstacles.forEach(o=>o.x-=S.droughtSpeed);
+  if(S.droughtJumping){
+    S.droughtJumpH=(S.droughtJumpH||0)+S.droughtJumpVy;
+    S.droughtJumpVy-=1.2;
+    if(S.droughtJumpH<=0){S.droughtJumpH=0;S.droughtJumping=false;}
+  }
+  const manX=W*0.25;
+  const manY=base-(S.droughtJumpH||0);
+  let hitNow=false;
+  S.droughtObstacles.forEach(o=>{
+    if(Math.abs(o.x-manX)<22 && manY>base-20 && !o.passed){
+      o.hit=true;hitNow=true;
+    }
+    if(o.x<manX-25 && !o.hit && !o.passed){o.passed=true;}
+  });
+  S.droughtObstacles.forEach(o=>{
+    ctx.save();
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.font='28px serif';
+    ctx.fillStyle='#000';
+    ctx.globalAlpha=1;
+    ctx.fillText(o.type, o.x-14, base);
+    ctx.restore();
+  });
+  // 衝突即アウト
+  if(hitNow){
+    S.droughtActive=false;
+    hide('ovDrought');
+    S.water=Math.max(0,S.water-15);
+    S.droughtObstacles=[];
+    S.droughtCount=0;
+    S.droughtTimer=0;
+    S.droughtNextSpawn=0;
+    sm('💥 ぶつかった！水が減ってしまった…');
+    ui();
+    return;
+  }
+  // 全障害物をよけきったらクリア
+  if(S.droughtCount>=8&&S.droughtObstacles.every(o=>o.x<-30)){
+    S.droughtActive=false;
+    hide('ovDrought');
+    S.water=Math.min(100,S.water+15);
+    S.love=Math.min(100,S.love+10);
+    S.droughtObstacles=[];
+    S.droughtCount=0;
+    S.droughtTimer=0;
+    S.droughtNextSpawn=0;
+    sm('🎉 全部飛び越えた！水を無事に運べた！');
+    ui();
+  }
+}
 function maybeEvent(){
   // 鳥・台風イベント（独立判定）
-  if(!S.birdActive&&!S.birdWarn&&!S.birdShowOwl&&S.bird2Step===0&&!S.typhoonActive&&S.stage>=1&&S.stage<4&&!S.mgActive&&!S.showMushroom){
+  if(!S.birdActive&&!S.birdWarn&&!S.birdShowOwl&&S.bird2Step===0&&!S.typhoonActive&&!S.droughtActive&&S.stage>=1&&S.stage<4&&!S.mgActive&&!S.showMushroom){
     const r=Math.random();
     if(r<0.0018){
       if(Math.random()<0.5){
@@ -495,6 +570,14 @@ function maybeEvent(){
     S.typhoonActive=true;S.supported=false;S.typhoonTimer=360;S.typhoonDir=Math.random()<0.5?1:-1;S.typhoonCount=0;
       show('ovTyphoon');show('evTy');el('ty-arrow').style.display='block';el('ty-arrow').textContent=S.typhoonDir>0?'👉':'👈';
       sm('🌀 台風！'+(S.typhoonDir>0?'右':'左')+'にスワイプして支えて！');
+    } else if(r<0.005){
+      S.droughtActive=true;
+      S.droughtTimer=0;
+      S.droughtObstacles=[];
+      S.droughtCount=0;
+      S.droughtSpeed=3;
+      el('ovDrought').style.display='block';
+      sm('💧 水不足！障害物を飛び越えて水を運べ！タップでジャンプ！');
     }
   }
   // 独り言（独立判定）
@@ -516,8 +599,20 @@ let _lastTouch=0;
 scene.addEventListener('touchstart',e=>{S.swipeStartX=e.touches[0].clientX;_lastTouch=Date.now();handleTap(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
 scene.addEventListener('click',e=>{if(Date.now()-_lastTouch<500)return;handleTap(e.clientX,e.clientY);});
 scene.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-S.swipeStartX;if(Math.abs(dx)>30)handleSwipe(dx);},{passive:true});
+// 水不足イベント中は画面のどこをタップしても反応させる
+let _droughtLastTouch=0;
+document.addEventListener('touchstart',e=>{if(!S.droughtActive)return;_droughtLastTouch=Date.now();if(!S.droughtJumping){S.droughtJumping=true;S.droughtJumpH=0;S.droughtJumpVy=14;}},{passive:true});
+document.addEventListener('click',e=>{if(!S.droughtActive)return;if(Date.now()-_droughtLastTouch<500)return;if(!S.droughtJumping){S.droughtJumping=true;S.droughtJumpH=0;S.droughtJumpVy=14;}});
 
 function handleTap(cx,cy){
+  if(S.droughtActive){
+    if(!S.droughtJumping){
+      S.droughtJumping=true;
+      S.droughtJumpH=0;
+      S.droughtJumpVy=14;
+    }
+    return;
+  }
   if(S.mgActive)return;
 
   // 鳥パターン1・警告タップ→フクロウ表示
@@ -612,6 +707,7 @@ function ol(fn,fc,sc,lw){ctx.save();ctx.lineJoin='round';ctx.lineCap='round';ctx
 function hl(x,y,rx,ry,a){ctx.save();ctx.globalAlpha=0.38;ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(x,y,rx,ry,a||0,0,Math.PI*2);ctx.fill();ctx.restore();}
 
 function drawBg(W,H){
+  ctx.setTransform(1,0,0,1,0,0);
   const d=S.dayTime;
   // 時間帯判定: 0.0-0.25=夜, 0.25-0.45=朝, 0.45-0.65=昼, 0.65-0.85=夕, 0.85-1.0=夜
   let bgKey;
@@ -646,6 +742,7 @@ function drawMoon(W,H){ctx.fillStyle='#d0d8f0';ctx.beginPath();ctx.arc(W-36,28,1
 function drawRain(W,H){ctx.strokeStyle='rgba(150,180,255,0.4)';ctx.lineWidth=1.2;for(let i=0;i<20;i++){const x=(S.frame*4+i*41)%W,y=(S.frame*5+i*57)%H;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-9,y+20);ctx.stroke();}}
 
 function drawPlant(W,H){
+  if(S.droughtActive)return;
   const cx=W/2,base=H-36,s=S.stage,tilt=S.typhoonActive&&!S.supported?Math.sin(S.frame*0.12)*0.22:0;
   ctx.save();ctx.translate(cx,base);ctx.rotate(tilt);ctx.translate(-cx,-base);
 
@@ -684,6 +781,21 @@ function drawMan(W,H){
   const base=H-36,cx=W/2;
   if(S.showSleep||S.sleeping||S.showSeedWait||S.showSing)return;
   if(S.typhoonActive){drawBody(cx-52,base,'support',cx);return;}
+  if(S.droughtActive){
+    const manX = W*0.25;
+    const jumpY = S.droughtJumping ? base - (S.droughtJumpH||0) : base;
+    // 水不足中は明るい色で描画（背景に埋もれないように）
+    ctx.save();
+    ctx.strokeStyle='#ffee00';ctx.lineWidth=5;ctx.lineCap='round';ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(manX,jumpY-52,11,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(manX,jumpY-41);ctx.lineTo(manX,jumpY-18);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(manX,jumpY-36);ctx.lineTo(manX+14,jumpY-24);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(manX,jumpY-36);ctx.lineTo(manX-12,jumpY-26);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(manX,jumpY-18);ctx.lineTo(manX-10,jumpY-2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(manX,jumpY-18);ctx.lineTo(manX+10,jumpY-2);ctx.stroke();
+    ctx.restore();
+    return;
+  }
   // 友人
   if(S.friendPhase>0){
     drawBody(cx-54,base,'stand');
@@ -893,7 +1005,7 @@ S.typhoonTimer--;if(S.typhoonTimer===0){S.typhoonActive=false;S.typhoonCount=0;h
     S.friendX+=1.5;
     if(S.friendX>cv.width+40){S.friendPhase=0;S.friendActive=false;}
   }
-  if(frame%300===0&&!S.sleeping&&!S.birdActive&&!S.birdWarn&&!S.bird2Step&&!S.typhoonActive&&S.stage<4&&!S.mgActive&&S.friendPhase===0){
+  if(frame%300===0&&!S.sleeping&&!S.birdActive&&!S.birdWarn&&!S.bird2Step&&!S.typhoonActive&&!S.droughtActive&&S.stage<4&&!S.mgActive&&S.friendPhase===0){
     const ct=Math.floor(Math.random()*10);
     S.cutType=ct;
     if(ct===4){S.climbTimer=120;}
@@ -908,6 +1020,7 @@ S.typhoonTimer--;if(S.typhoonTimer===0){S.typhoonActive=false;S.typhoonCount=0;h
   maybeEvent();
   const W=cv.width,H=cv.height;
   drawBg(W,H);drawPlant(W,H);drawMan(W,H);drawBird(W,H);
+  if(S.droughtActive) updateDrought(W,H);
   requestAnimationFrame(tick);
 }
 function hideBalloon(){el('balloon').style.display='none';}
